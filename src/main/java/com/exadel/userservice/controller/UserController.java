@@ -5,6 +5,7 @@ import com.exadel.userservice.dto.UserRequestDTO;
 import com.exadel.userservice.dto.UserResponseDTO;
 import com.exadel.userservice.dto.UserSummaryDTO;
 import com.exadel.userservice.model.User;
+import com.exadel.userservice.service.IUserService;
 import com.exadel.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class UserController {
     private final UserMapper userMapper;
-    private final UserService service;
+    private final IUserService service;
 
     @PostMapping
     public UserResponseDTO createUser(@Valid @RequestBody UserRequestDTO dto) {

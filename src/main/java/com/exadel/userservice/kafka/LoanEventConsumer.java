@@ -4,6 +4,7 @@ import com.exadel.userservice.dto.BookEventDTO;
 import com.exadel.userservice.model.BorrowedBook;
 import com.exadel.userservice.repository.BorrowedBookRepository;
 import com.exadel.userservice.service.BorrowedBookService;
+import com.exadel.userservice.service.IBorrowedBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LoanEventConsumer {
 
-    private final BorrowedBookService borrowedBookService;
+    private final IBorrowedBookService borrowedBookService;
 
     @KafkaListener(topics = "loan-events", groupId = "user-service-group")
     public void consume(BookEventDTO event) {

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class BorrowedBookService {
+public class BorrowedBookService implements IBorrowedBookService {
 
     private final BorrowedBookRepository repository;
     private final UserRepository userRepository;

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class UserService {
+public class UserService implements IUserService {
 
     private final UserRepository repository;
     private final UserValidator validator;
