@@ -32,7 +32,7 @@ public class UserService implements IUserService {
     // Pega um usuário específico e os livros emprestados
     public UserResponseDTO getUserById(Long id) {
         User user = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         List<BorrowedBook> books = borrowedBookRepository.findByUserId(user.getId());
 

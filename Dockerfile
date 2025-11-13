@@ -6,7 +6,7 @@ COPY src ./src
 RUN mvn package -DskipTests
 
 # Estágio Final
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
