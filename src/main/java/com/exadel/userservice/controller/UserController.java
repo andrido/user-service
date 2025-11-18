@@ -16,16 +16,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @AllArgsConstructor
-
 public class UserController {
-    private final UserMapper userMapper;
+
     private final IUserService service;
 
     @PostMapping
     public UserResponseDTO createUser(@Valid @RequestBody UserRequestDTO dto) {
-        User user = userMapper.convertToEntity(dto);
-        User saved = service.createUser(user);
-        return userMapper.convertToDTO(saved);
+        return service.createUser(dto);
     }
 
     @GetMapping("/{id}")
@@ -33,29 +30,19 @@ public class UserController {
         return service.getUserById(id);
     }
 
-
     @GetMapping
     public List<UserSummaryDTO> getAllUsers() {
         return service.getAllUsers();
+    }
+
+    @PutMapping("/{id}")
+    public UserResponseDTO updateUser(@PathVariable Long id,
+                                      @Valid @RequestBody UserRequestDTO dto) {
+        return service.updateUser(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
         service.deleteUser(id);
     }
-
-    @PutMapping("/{id}")
-    public UserResponseDTO updateUser(@PathVariable Long id, @Valid @RequestBody UserRequestDTO dto) {
-        // Converte DTO para entidade
-        User user = userMapper.convertToEntity(dto);
-        user.setId(id);
-
-        // Chama o service para atualizar
-        User updated = service.updateUser(user);
-
-        // Converte de volta para DTO e retorna
-        return userMapper.convertToDTO(updated);
-    }
-
-
 }

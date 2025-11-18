@@ -43,7 +43,5 @@ class LoanEventConsumerTest {
                 null, // BookStatus ignorado aqui
                 BorrowedStatus.BORROWED
         );
-        ;
-        ;
     }
 }

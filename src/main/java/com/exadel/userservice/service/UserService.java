@@ -1,6 +1,7 @@
 package com.exadel.userservice.service;
 
 import com.exadel.userservice.dto.UserMapper;
+import com.exadel.userservice.dto.UserRequestDTO;
 import com.exadel.userservice.dto.UserResponseDTO;
 import com.exadel.userservice.dto.UserSummaryDTO;
 import com.exadel.userservice.exception.UserValidationException;
@@ -25,17 +26,20 @@ public class UserService implements IUserService {
     private final BorrowedBookRepository borrowedBookRepository;
     private final UserMapper userMapper;
 
-    public User createUser(User user) {
+    @Override
+    public UserResponseDTO createUser(UserRequestDTO dto) {
+        User user = userMapper.convertToEntity(dto);
 
         if (repository.existsByEmail(user.getEmail())) {
             throw new UserValidationException("Email already exists.");
         }
 
-        // Valida dados do objeto
         validator.validate(user);
+        User saved = repository.save(user);
 
-        return repository.save(user);
+        return userMapper.convertToDTO(saved);
     }
+
 
 
     public UserResponseDTO getUserById(Long id) {
@@ -53,15 +57,32 @@ public class UserService implements IUserService {
 
         return userMapper.convertToDTO(user, titles);
     }
-    public User updateUser(User user) {
-        User existing = repository.findByEmail(user.getEmail()).orElse(null);
-        if (existing != null && !existing.getId().equals(user.getId())) {
-            throw new UserValidationException("Email already exists for another user.");
+    @Override
+    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
+
+        User existingUser = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+
+        if (!existingUser.getEmail().equals(dto.getEmail()) && repository.existsByEmail(dto.getEmail())) {
+            throw new UserValidationException("Email already exists.");
         }
 
-        validator.validateUpdate(user);
-        return repository.save(user);
+
+        existingUser.setFirstName(dto.getFirstName());
+        existingUser.setLastName(dto.getLastName());
+        existingUser.setEmail(dto.getEmail());
+        existingUser.setPhone(dto.getPhone());
+
+        validator.validateUpdate(existingUser);
+
+
+        User savedUser = repository.save(existingUser);
+
+
+        return userMapper.convertToDTO(savedUser);
     }
+
 
 
     public List<UserSummaryDTO> getAllUsers() {

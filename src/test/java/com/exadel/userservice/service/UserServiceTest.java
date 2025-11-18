@@ -1,5 +1,6 @@
 package com.exadel.userservice.service;
 
+import com.exadel.userservice.dto.UserRequestDTO;
 import com.exadel.userservice.dto.UserMapper;
 import com.exadel.userservice.dto.UserResponseDTO;
 import com.exadel.userservice.dto.UserSummaryDTO;
@@ -42,28 +43,49 @@ class UserServiceTest {
 
     @Test
     void createUser_ShouldValidateAndSave() {
-        User user = new User();
-        when(userRepository.save(user)).thenReturn(user);
+        // Arrange
+        UserRequestDTO requestDTO = new UserRequestDTO(); // Preencha com dados se necessário
+        User userEntity = new User();
+        User savedUser = new User();
+        UserResponseDTO responseDTO = new UserResponseDTO();
 
-        User saved = userService.createUser(user);
+        // Mock do Mapper (DTO -> Entity)
+        when(userMapper.convertToEntity(requestDTO)).thenReturn(userEntity);
+        // Mock da verificação de email
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        // Mock do repositório
+        when(userRepository.save(userEntity)).thenReturn(savedUser);
+        // Mock do Mapper (Entity -> DTO)
+        when(userMapper.convertToDTO(savedUser)).thenReturn(responseDTO);
 
-        verify(validator).validate(user);
-        verify(userRepository).save(user);
-        assertEquals(user, saved);
+        // Act
+        UserResponseDTO result = userService.createUser(requestDTO);
+
+        // Assert
+        verify(validator).validate(userEntity);
+        verify(userRepository).save(userEntity);
+        assertEquals(responseDTO, result);
     }
 
     @Test
     void createUser_ShouldNotSave_WhenValidationFails() {
-        User invalid = new User();
-        doThrow(new RuntimeException("invalid")).when(validator).validate(invalid);
+        // Arrange
+        UserRequestDTO requestDTO = new UserRequestDTO();
+        User userEntity = new User();
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.createUser(invalid));
+        when(userMapper.convertToEntity(requestDTO)).thenReturn(userEntity);
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+
+        // Simula erro na validação
+        doThrow(new RuntimeException("invalid")).when(validator).validate(userEntity);
+
+        // Act & Assert
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.createUser(requestDTO));
         assertEquals("invalid", ex.getMessage());
 
-        verify(validator).validate(invalid);
+        verify(validator).validate(userEntity);
         verify(userRepository, never()).save(any());
     }
-
     @Test
     void getUserById_ShouldReturnUserWithBooks() {
         Long userId = 1L;
@@ -130,13 +152,21 @@ class UserServiceTest {
 
     @Test
     void createUser_ShouldThrowException_WhenEmailExists() {
-        User user = new User();
-        user.setEmail("test@example.com");
+        // Arrange
+        UserRequestDTO requestDTO = new UserRequestDTO();
+        requestDTO.setEmail("test@example.com");
 
-        when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
+        User userEntity = new User();
+        userEntity.setEmail("test@example.com");
 
-        UserValidationException ex = assertThrows(UserValidationException.class, () -> userService.createUser(user));
+        when(userMapper.convertToEntity(requestDTO)).thenReturn(userEntity);
+        when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
+
+        // Act & Assert
+        UserValidationException ex = assertThrows(UserValidationException.class, () -> userService.createUser(requestDTO));
         assertEquals("Email already exists.", ex.getMessage());
+
+        verify(userRepository, never()).save(any());
     }
 
 
