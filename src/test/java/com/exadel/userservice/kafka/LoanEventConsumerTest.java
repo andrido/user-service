@@ -1,6 +1,8 @@
 package com.exadel.userservice.kafka;
 
 import com.exadel.userservice.dto.BookEventDTO;
+import com.exadel.userservice.dto.BookStatus;
+import com.exadel.userservice.model.BorrowedStatus;
 import com.exadel.userservice.service.IBorrowedBookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,10 +32,18 @@ class LoanEventConsumerTest {
         event.setUserId(1L);
         event.setBookId(2L);
         event.setBookTitle("Clean Code");
-        event.setStatus("BORROWED");
+        event.setStatus(BorrowedStatus.BORROWED);
 
         consumer.consume(event);
 
-        verify(borrowedBookService).handleBookEvent(1L, 2L, "Clean Code", "BORROWED");
+        verify(borrowedBookService).handleBookEvent(
+                1L,
+                2L,
+                "Clean Code",
+                null, // BookStatus ignorado aqui
+                BorrowedStatus.BORROWED
+        );
+        ;
+        ;
     }
 }

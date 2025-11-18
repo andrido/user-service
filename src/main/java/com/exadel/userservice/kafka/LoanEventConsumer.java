@@ -17,20 +17,13 @@ public class LoanEventConsumer {
 
     @KafkaListener(topics = "loan-events", groupId = "user-service-group")
     public void consume(BookEventDTO event) {
-        System.out.println("📨 [Kafka] Evento recebido: " + event);
-        System.out.println("🧩 userId=" + event.getUserId() +
-                " | bookId=" + event.getBookId() +
-                " | title=" + event.getBookTitle() +
-                " | status=" + event.getStatus());
-
         borrowedBookService.handleBookEvent(
                 event.getUserId(),
                 event.getBookId(),
                 event.getBookTitle(),
-                event.getStatus()
+                null, // BookStatus se quiser ignorar
+                event.getStatus() // BorrowedStatus direto
         );
     }
-    ;
+    }
 
-
-}

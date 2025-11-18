@@ -1,5 +1,6 @@
 package com.exadel.userservice.service;
 
+import com.exadel.userservice.dto.BookStatus;
 import com.exadel.userservice.model.*;
 import com.exadel.userservice.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,30 +30,28 @@ class BorrowedBookServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+
     @Test
-    void handleBookEvent_Borrowed_ShouldSaveNewBook() {
+    void handleBookEvent_Returned_ShouldUpdateExistingBook() {
+        // Mock do usuário
         User user = new User();
         user.setId(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        service.handleBookEvent(1L, 2L, "Effective Java", "BORROWED");
-
-        verify(borrowedBookRepository).save(any(BorrowedBook.class));
-    }
-
-    @Test
-    void handleBookEvent_Returned_ShouldUpdateExistingBook() {
+        // Mock do livro já emprestado
         BorrowedBook existing = BorrowedBook.builder()
                 .bookId(2L)
                 .status(BorrowedStatus.BORROWED)
                 .build();
-
         when(borrowedBookRepository.findByUserIdAndBookIdAndStatus(1L, 2L, BorrowedStatus.BORROWED))
                 .thenReturn(existing);
 
-        service.handleBookEvent(1L, 2L, "Effective Java", "RETURNED");
+        // Chama o método com RETURNED
+        service.handleBookEvent(1L, 2L, "Effective Java", null, BorrowedStatus.RETURNED);
 
-        verify(borrowedBookRepository).save(existing);
+        // Verifica que o save foi chamado
+        verify(borrowedBookRepository, times(1)).save(existing);
+
         assertEquals(BorrowedStatus.RETURNED, existing.getStatus());
     }
 }

@@ -3,6 +3,7 @@ package com.exadel.userservice.service;
 import com.exadel.userservice.dto.UserMapper;
 import com.exadel.userservice.dto.UserResponseDTO;
 import com.exadel.userservice.dto.UserSummaryDTO;
+import com.exadel.userservice.exception.UserValidationException;
 import com.exadel.userservice.model.BorrowedBook;
 import com.exadel.userservice.model.BorrowedStatus;
 import com.exadel.userservice.model.User;
@@ -126,4 +127,17 @@ class UserServiceTest {
         verify(userRepository).findAll();
         verify(userMapper).convertToSummaryDTOList(users);
     }
+
+    @Test
+    void createUser_ShouldThrowException_WhenEmailExists() {
+        User user = new User();
+        user.setEmail("test@example.com");
+
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
+
+        UserValidationException ex = assertThrows(UserValidationException.class, () -> userService.createUser(user));
+        assertEquals("Email already exists.", ex.getMessage());
+    }
+
+
 }

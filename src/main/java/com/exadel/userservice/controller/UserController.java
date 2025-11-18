@@ -44,6 +44,18 @@ public class UserController {
         service.deleteUser(id);
     }
 
+    @PutMapping("/{id}")
+    public UserResponseDTO updateUser(@PathVariable Long id, @Valid @RequestBody UserRequestDTO dto) {
+        // Converte DTO para entidade
+        User user = userMapper.convertToEntity(dto);
+        user.setId(id);
+
+        // Chama o service para atualizar
+        User updated = service.updateUser(user);
+
+        // Converte de volta para DTO e retorna
+        return userMapper.convertToDTO(updated);
+    }
 
 
 }

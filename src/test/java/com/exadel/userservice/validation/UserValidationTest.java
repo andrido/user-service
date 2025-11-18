@@ -2,65 +2,78 @@ package com.exadel.userservice.validation;
 
 import com.exadel.userservice.exception.UserValidationException;
 import com.exadel.userservice.model.User;
-import com.exadel.userservice.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import java.util.Optional;
-
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserValidationTest {
+class UserValidatorTest {
 
-    @Mock
-    private UserRepository repository;
-
-    @InjectMocks
-    private UserValidator validator;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    private final UserValidator validator = new UserValidator();
 
     @Test
-    void shouldThrowExceptionWhenEmailExists() {
+    void shouldThrowWhenPasswordTooShort() {
         User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("123456");
-
-        when(repository.existsByEmail("test@example.com")).thenReturn(true);
-
-        UserValidationException ex = assertThrows(UserValidationException.class,
-                () -> validator.validate(user));
-        assertEquals("Email already exists.", ex.getMessage());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenPasswordTooShort() {
-        User user = new User();
-        user.setEmail("new@example.com");
+        user.setEmail("user@example.com");
         user.setPassword("123");
 
-        when(repository.existsByEmail("new@example.com")).thenReturn(false);
+        UserValidationException ex = assertThrows(UserValidationException.class,
+                () -> validator.validate(user));
+
+        assertEquals("Password must be at least 6 characters long.", ex.getMessage());
+    }
+
+    @Test
+    void shouldThrowWhenEmailIsNull() {
+        User user = new User();
+        user.setEmail(null);
+        user.setPassword("123456");
 
         UserValidationException ex = assertThrows(UserValidationException.class,
                 () -> validator.validate(user));
-        assertEquals("Password must be at least 6 characters long.", ex.getMessage());
+
+        assertEquals("Email must not be empty.", ex.getMessage());
+    }
+
+    @Test
+    void shouldThrowWhenEmailIsEmpty() {
+        User user = new User();
+        user.setEmail("");
+        user.setPassword("123456");
+
+        UserValidationException ex = assertThrows(UserValidationException.class,
+                () -> validator.validate(user));
+
+        assertEquals("Email must not be empty.", ex.getMessage());
     }
 
     @Test
     void shouldNotThrowWhenValid() {
         User user = new User();
-        user.setEmail("new@example.com");
+        user.setEmail("user@example.com");
         user.setPassword("123456");
 
-        when(repository.existsByEmail("new@example.com")).thenReturn(false);
-
         assertDoesNotThrow(() -> validator.validate(user));
+    }
+
+
+    @Test
+    void shouldThrowOnUpdateWhenPasswordTooShort() {
+        User user = new User();
+        user.setEmail("user@example.com");
+        user.setPassword("123");
+
+        UserValidationException ex = assertThrows(UserValidationException.class,
+                () -> validator.validateUpdate(user));
+
+        assertEquals("Password must be at least 6 characters long.", ex.getMessage());
+    }
+
+    @Test
+    void shouldNotThrowOnUpdateWhenPasswordNull() {
+        User user = new User();
+        user.setEmail("user@example.com");
+        user.setPassword(null);
+
+        assertDoesNotThrow(() -> validator.validateUpdate(user));
     }
 }
